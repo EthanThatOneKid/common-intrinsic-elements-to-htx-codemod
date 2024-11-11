@@ -1,0 +1,12 @@
+{
+  "lock": false,
+  "tasks": {
+    "dev": "deno run -A --watch main.ts"
+  },
+  "imports": {
+    "@fartlabs/ht": "jsr:@fartlabs/ht@^0.0.9",
+    "@std/async": "jsr:@std/async@^1.0.8",
+    "@std/fs": "jsr:@std/fs@^1.0.5",
+    "@ts-morph/ts-morph": "jsr:@ts-morph/ts-morph@^24.0.0"
+  }
+}
