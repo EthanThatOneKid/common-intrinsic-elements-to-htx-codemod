@@ -1,3 +1,8 @@
 # intrinsic-elements-to-htx
 
-Script that modifies .jsx/.tsx code to prefer `@fartlabs/htx` components.
+Converts common .jsx/.tsx intrinsic elements to
+[`@fartlabs/htx`](https://jsr.io/@fartlabs/htx) components.
+
+---
+
+Developed with 🧪 by [**@EthanThatOneKid**](https://etok.codes/)
