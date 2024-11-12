@@ -2,55 +2,49 @@ import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
 import type { WalkEntry } from "@std/fs/walk";
 import { expandGlob } from "@std/fs/expand-glob";
 import { getDescriptors } from "@fartlabs/ht/cli/codegen";
+import type { Tree } from "deno-tree-sitter/tree_sitter.js";
+import { parserFromWasm } from "deno-tree-sitter/main.js";
+import tsx from "common-tree-sitter-languages/tsx.js";
 
 export const htxSpecifier = "@fartlabs/htx";
 export const intrinsicElements = new Set(
   getDescriptors().map((descriptor) => descriptor.tag),
 );
+export const tsxParser = await parserFromWasm(tsx);
 
 if (import.meta.main) {
-  for (const entry of await expandJsxFiles(Deno.args)) {
-    await processJsxFileEntry(entry);
+  for (const entry of await expandTsxFiles(Deno.args)) {
+    await processTsxFileEntry(entry);
   }
 }
 
-async function processJsxFileEntry(entry: WalkEntry): Promise<void> {
+async function processTsxFileEntry(entry: WalkEntry): Promise<void> {
   await Deno.writeTextFile(
     entry.path,
-    processJsxFile(
-      parserByExtension(entry.path),
-      await Deno.readTextFile(entry.path),
-    ),
+    processTsxFile(tsxParser.parse(await Deno.readTextFile(entry.path)))
+      .rootNode.toString(),
   );
-}
-
-function parserByExtension(file: string): Parser {
-  if (file.endsWith(".jsx")) {
-    return "jsx";
-  } else if (file.endsWith(".tsx")) {
-    return "tsx";
-  } else {
-    throw new Error(`Expected .jsx or .tsx file, got ${file}`);
-  }
 }
 
 // TODO: Add Tree-Sitter parser.
 
-function processJsxFile(parser: Parser, sourceCode: string): string {
+function processTsxFile(tree: Tree): Tree {
   // TODO: Find @fartlabs/htx import statement.
-  // TODO: As jsx intrinsics are encountered, add them to the import statement and capitalize them.
+  // TODO: As Tsx intrinsics are encountered, add them to the import statement and capitalize them.
   //
+
+  return tree;
 }
 
-async function expandJsxFiles(globs: string[]): Promise<WalkEntry[]> {
+async function expandTsxFiles(globs: string[]): Promise<WalkEntry[]> {
   const entries = await Array.fromAsync(expandGlobs(globs));
   for (const entry of entries) {
     if (!entry.isFile) {
       throw new Error(`Expected file, got ${entry.path}`);
     }
 
-    const isJsx = /\.[jt]sx$/.test(entry.path);
-    if (!isJsx) {
+    const isTsx = /\.[jt]sx$/.test(entry.path);
+    if (!isTsx) {
       throw new Error(`Expected .jsx or .tsx file, got ${entry.path}`);
     }
   }

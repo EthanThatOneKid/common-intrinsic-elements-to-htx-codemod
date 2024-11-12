@@ -1,12 +1,13 @@
 {
   "lock": false,
   "tasks": {
-    "dev": "deno run -A --watch main.ts"
+    "dev": "deno run -A --watch main.ts example.tsx"
   },
   "imports": {
-    "@fartlabs/ht": "jsr:@fartlabs/ht@^0.0.9",
     "@std/async": "jsr:@std/async@^1.0.8",
     "@std/fs": "jsr:@std/fs@^1.0.5",
-    "@ts-morph/ts-morph": "jsr:@ts-morph/ts-morph@^24.0.0"
+    "@fartlabs/ht": "jsr:@fartlabs/ht@^0.0.9",
+    "deno-tree-sitter/": "https://deno.land/x/deno_tree_sitter@0.2.6.0/",
+    "common-tree-sitter-languages/": "https://github.com/jeff-hykin/common_tree_sitter_languages/raw/e0395e3a6e552b0fa73500d5b724735a52936067/main/"
   }
 }
