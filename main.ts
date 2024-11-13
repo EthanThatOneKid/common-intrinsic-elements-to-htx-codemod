@@ -1,39 +1,50 @@
 import { MuxAsyncIterator } from "@std/async/mux-async-iterator";
 import type { WalkEntry } from "@std/fs/walk";
 import { expandGlob } from "@std/fs/expand-glob";
-import { getDescriptors } from "@fartlabs/ht/cli/codegen";
-import type { Tree } from "deno-tree-sitter/tree_sitter.js";
-import { parserFromWasm } from "deno-tree-sitter/main.js";
-import tsx from "common-tree-sitter-languages/tsx.js";
+import type { SourceFile } from "ts-morph";
+import { Project, ts } from "ts-morph";
+import { getDescriptors, voidElements } from "@fartlabs/ht/cli/codegen";
 
 export const htxSpecifier = "@fartlabs/htx";
-export const intrinsicElements = new Set(
+export const commonIntrinsicElements = new Set(
   getDescriptors().map((descriptor) => descriptor.tag),
 );
-export const tsxParser = await parserFromWasm(tsx);
 
 if (import.meta.main) {
+  const project = new Project();
   for (const entry of await expandTsxFiles(Deno.args)) {
-    await processTsxFileEntry(entry);
+    const sourceFile = project.addSourceFileAtPath(entry.path);
+    await processTsxSourceFile(sourceFile);
   }
 }
 
-async function processTsxFileEntry(entry: WalkEntry): Promise<void> {
-  await Deno.writeTextFile(
-    entry.path,
-    processTsxFile(tsxParser.parse(await Deno.readTextFile(entry.path)))
-      .rootNode.toString(),
+function processTsxSourceFile(sourceFile: SourceFile) {
+  // Find first instance of import to @fartlabs/htx.
+  // let htxImport = sourceFile.getImportDeclaration(htxSpecifier);
+  // const namedHtxImports = new Set(htxImport?.getNamedImports());
+
+  // Find all JSX elements in the source file.
+  const jsxElements = sourceFile.getDescendantsOfKind(
+    ts.SyntaxKind.JsxElement,
   );
-}
 
-// TODO: Add Tree-Sitter parser.
+  // Modify common intrinsic elements to use htx.
+  jsxElements.forEach((jsxElement) => {
+    const openingElement = jsxElement.getFirstChildByKind(
+      ts.SyntaxKind.JsxOpeningElement,
+    );
+    const tagNameNode = openingElement?.getFirstChildByKind(
+      ts.SyntaxKind.Identifier,
+    );
+    console.log({ tagName: tagNameNode?.getText() });
 
-function processTsxFile(tree: Tree): Tree {
-  // TODO: Find @fartlabs/htx import statement.
-  // TODO: As Tsx intrinsics are encountered, add them to the import statement and capitalize them.
-  //
+    // If tag is void, then no closing tag is needed.
 
-  return tree;
+    // TODO: Finish.
+    throw new Error("Not implemented");
+  });
+
+  // Update the htx import.
 }
 
 async function expandTsxFiles(globs: string[]): Promise<WalkEntry[]> {
