@@ -3,48 +3,97 @@ import type { WalkEntry } from "@std/fs/walk";
 import { expandGlob } from "@std/fs/expand-glob";
 import type { SourceFile } from "ts-morph";
 import { Project, ts } from "ts-morph";
-import { getDescriptors, voidElements } from "@fartlabs/ht/cli/codegen";
+import { getDescriptors } from "@fartlabs/ht/cli/codegen";
 
 export const htxSpecifier = "@fartlabs/htx";
+export const htxDescriptors = getDescriptors();
 export const commonIntrinsicElements = new Set(
-  getDescriptors().map((descriptor) => descriptor.tag),
+  htxDescriptors.map((descriptor) => descriptor.tag),
 );
 
 if (import.meta.main) {
   const project = new Project();
   for (const entry of await expandTsxFiles(Deno.args)) {
     const sourceFile = project.addSourceFileAtPath(entry.path);
-    await processTsxSourceFile(sourceFile);
+    processTsxSourceFile(sourceFile);
   }
+
+  await project.save();
 }
 
-function processTsxSourceFile(sourceFile: SourceFile) {
-  // Find first instance of import to @fartlabs/htx.
-  // let htxImport = sourceFile.getImportDeclaration(htxSpecifier);
-  // const namedHtxImports = new Set(htxImport?.getNamedImports());
-
+/**
+ * processTsxSourceFile modifies a TSX source file to use htx instead of common
+ * intrinsic elements.
+ */
+export function processTsxSourceFile(sourceFile: SourceFile) {
   // Find all JSX elements in the source file.
-  const jsxElements = sourceFile.getDescendantsOfKind(
-    ts.SyntaxKind.JsxElement,
-  );
+  const tagNames = new Set<string>();
 
-  // Modify common intrinsic elements to use htx.
-  jsxElements.forEach((jsxElement) => {
-    const openingElement = jsxElement.getFirstChildByKind(
-      ts.SyntaxKind.JsxOpeningElement,
-    );
-    const tagNameNode = openingElement?.getFirstChildByKind(
-      ts.SyntaxKind.Identifier,
-    );
-    console.log({ tagName: tagNameNode?.getText() });
+  // Find all the JSX elements with closing tags in the source file and modify them.
+  sourceFile
+    .getDescendantsOfKind(ts.SyntaxKind.JsxElement)
+    .forEach((jsxElement) => {
+      // Modify common intrinsic elements to use htx.
+      const openingElementNode = jsxElement
+        .getFirstChildByKind(ts.SyntaxKind.JsxOpeningElement);
+      if (openingElementNode === undefined) {
+        return;
+      }
 
-    // If tag is void, then no closing tag is needed.
+      const openingIdentifierNode = openingElementNode
+        .getFirstChildByKind(ts.SyntaxKind.Identifier);
+      const tagName = openingIdentifierNode?.getText();
+      if (!tagName) {
+        throw new Error("Expected tag name");
+      }
 
-    // TODO: Finish.
-    throw new Error("Not implemented");
-  });
+      if (!commonIntrinsicElements.has(tagName)) {
+        return;
+      }
+      openingIdentifierNode?.replaceWithText(tagName.toUpperCase());
+      tagNames.add(tagName);
 
-  // Update the htx import.
+      // Modify closing element if it exists.
+      const closingElementNode = jsxElement
+        .getFirstChildByKind(ts.SyntaxKind.JsxClosingElement);
+      if (closingElementNode !== undefined) {
+        const closingIdentifierNode = closingElementNode
+          .getFirstChildByKind(ts.SyntaxKind.Identifier);
+        closingIdentifierNode?.replaceWithText(tagName.toUpperCase());
+      }
+    });
+
+  sourceFile
+    .getDescendantsOfKind(ts.SyntaxKind.JsxSelfClosingElement)
+    .forEach((jsxElement) => {
+      // Modify common intrinsic elements to use htx.
+      const openingElementNode = jsxElement
+        .getFirstChildByKind(ts.SyntaxKind.Identifier);
+      if (openingElementNode === undefined) {
+        return;
+      }
+
+      const tagName = openingElementNode.getText();
+      if (tagName === undefined) {
+        throw new Error("Expected tag name");
+      }
+
+      if (!commonIntrinsicElements.has(tagName)) {
+        return;
+      }
+
+      openingElementNode.replaceWithText(tagName.toUpperCase());
+      tagNames.add(tagName);
+    });
+
+  // Update the htx import or prepend it if it doesn't exist.
+  const htxImport = sourceFile.getImportDeclaration(htxSpecifier) ??
+    sourceFile.addImportDeclaration({ moduleSpecifier: htxSpecifier });
+  Array.from(tagNames)
+    .toSorted()
+    .forEach((tagName) => {
+      htxImport.addNamedImport({ name: tagName.toUpperCase() });
+    });
 }
 
 async function expandTsxFiles(globs: string[]): Promise<WalkEntry[]> {
