@@ -1,12 +1,11 @@
 import type { SourceFile } from "ts-morph";
 import { ts } from "ts-morph";
-import { getDescriptors } from "@fartlabs/ht/cli/codegen";
+import commonIntrinsicElements from "./common-intrinsic-elements.json" with {
+  type: "json",
+};
 
 const htxSpecifier = "@fartlabs/htx";
-const htxDescriptors = getDescriptors();
-const commonIntrinsicElements = new Set(
-  htxDescriptors.map((descriptor) => descriptor.tag),
-);
+const commonIntrinsicElementsSet = new Set(commonIntrinsicElements);
 
 /**
  * applyCommonIntrinsicElementsToHtxCodemod modifies a TSX source file to use
@@ -35,10 +34,10 @@ export function applyCommonIntrinsicElementsToHtxCodemod(
       if (!tagName) {
         throw new Error("Expected tag name");
       }
-
-      if (!commonIntrinsicElements.has(tagName)) {
+      if (!commonIntrinsicElementsSet.has(tagName)) {
         return;
       }
+
       openingIdentifierNode?.replaceWithText(tagName.toUpperCase());
       tagNames.add(tagName);
 
@@ -67,7 +66,7 @@ export function applyCommonIntrinsicElementsToHtxCodemod(
         throw new Error("Expected tag name");
       }
 
-      if (!commonIntrinsicElements.has(tagName)) {
+      if (!commonIntrinsicElementsSet.has(tagName)) {
         return;
       }
 

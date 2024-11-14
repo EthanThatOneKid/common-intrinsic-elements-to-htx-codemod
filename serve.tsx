@@ -62,7 +62,7 @@ const router = route(
                     class="fart-button"
                     target="_blank"
                   >
-                    Source code <SMALL>↗</SMALL>
+                    Source code<SMALL>↗</SMALL>
                   </A>
                 </P>
               </SECTION>
@@ -102,30 +102,33 @@ const router = route(
                       🧪
                     </A>
                   </P>
-                  <A
-                    href="https://fartlabs.org/blog"
-                    class="fart-button"
-                    target="_blank"
-                  >
-                    Blog
-                    <SMALL>↗</SMALL>
-                  </A>
-                  <A
-                    href="https://github.com/FartLabs"
-                    class="fart-button"
-                    target="_blank"
-                  >
-                    GitHub
-                    <SMALL>↗</SMALL>
-                  </A>
-                  <A
-                    href="https://go.fart.tools/chat"
-                    class="fart-button"
-                    target="_blank"
-                  >
-                    Chat
-                    <SMALL>↗</SMALL>
-                  </A>
+
+                  <P>
+                    <A
+                      href="https://fartlabs.org/blog"
+                      class="fart-button"
+                      target="_blank"
+                    >
+                      Blog
+                      <SMALL>↗</SMALL>
+                    </A>{" "}
+                    <A
+                      href="https://github.com/FartLabs"
+                      class="fart-button"
+                      target="_blank"
+                    >
+                      GitHub
+                      <SMALL>↗</SMALL>
+                    </A>{" "}
+                    <A
+                      href="https://go.fart.tools/chat"
+                      class="fart-button"
+                      target="_blank"
+                    >
+                      Chat
+                      <SMALL>↗</SMALL>
+                    </A>
+                  </P>
                 </FOOTER>
               </SECTION>
             </BODY>
