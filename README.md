@@ -5,9 +5,15 @@ Codemod to convert common .jsx/.tsx intrinsic elements to
 
 <!-- ## Usage
 
+### Command line interface
+
+Apply the codemod in your project directory:
+
 ```sh
-TODO: Add usage instructions.
-``` -->
+# TODO: Publish on jsr.io
+deno run -A https://github.com/EthanThatOneKid/common-intrinsic-elements-to-htx-codemod/raw/main/main.ts **/*.ts
+```
+### API -->
 
 ## Contributing
 
