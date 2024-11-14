@@ -77,7 +77,7 @@ const router = route(
                     name="sourceCode"
                     id="sourceCode"
                     rows="10"
-                    cols="50"
+                    cols="80"
                   >
                     {exampleBefore}
                   </TEXTAREA>
